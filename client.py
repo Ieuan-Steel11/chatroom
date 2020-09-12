@@ -11,12 +11,21 @@ class Client:
         try:
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client_socket.connect((self.host, self.port))
-        except:
-            print("Error: could not connect to server")
-        # trying to connect to server
+        except ConnectionRefusedError:
+            print("ConnectionError: could not connect to server")
+            quit(ConnectionRefusedError)
+            # trying to connect to server
+        except ConnectionError:
+            print("ConnectionError: could not connect to server")
+            quit(ConnectionError)
+            # trying to connect to server
+        except ConnectionAbortedError:
+            print("ConnectionError: could not connect to server")
+            quit(ConnectionAbortedError)
+            # trying to connect to server
 
         self.name = input("Username: ")
-        self.client_socket.sendall(self.name.encode("ascii"))
+        self.client_socket.sendall(self.name.encode())
         # gets username and broadcasts that the user joined
 
         server_handler = threading.Thread(target=self.getServerMessages)
@@ -30,19 +39,28 @@ class Client:
     def getServerMessages(self):
         while True:
             try:
-                print(self.client_socket.recv(1024).decode("ascii"))
-            except:
-                print("Error: could not receive message from server")
+                print(f"\n{self.client_socket.recv(1024).decode()[2:-1]}")
+            except socket.error:
+                print("MessageError: could not receive message from server")
             # trying to receive message from server
+            except ConnectionAbortedError:
+                print("ConnectionError: Server disconnected")
 
     def sendMessage(self):
         while True:
             try:
                 message = input(f"{self.name}: ")
-                self.client_socket.sendall(message.encode("ascii"))
-            except:
-                print("Error: Could not send message to server")
-            # trying to send message to server
+                if message != "":
+                    if "QUIT" in message:
+                        self.client_socket.sendall(f"{self.name} has disconnected from the server".encode())
+                        self.client_socket.close()
+                        break
+                    else:
+                        self.client_socket.sendall(f"{self.name}: {message}".encode())
+            except socket.error:
+                print("MessageError: Could not send message to server")
+                # trying to send message to server
+        quit(0)
 
 
 client = Client()

@@ -21,31 +21,33 @@ class Server:
         message_handler = threading.Thread(target=self.getClientMessage)
         message_handler.start()
 
-    def _broadcast(self, sender, message):
+    def _broadcast(self, message, sender):
         for client in self.connections:
-            if client != self.listening_socket and client != sender:
-                try:
-                    client.sendall(message.encode("ascii"))
-                except:
-                    print("Error: could not send message")
+            if client != sender:
+                client.sendall(f"{message}\n".encode())
 
     def getNewConnections(self):
         while True:
             connection, address = self.listening_socket.accept()
             self.connections.append(connection)
-            # gets accepts connections and stores them in memory
+            print(f"{address} connected to the server!")
+            # gets accepts connections and stores them in a list
 
             username = connection.recv(1024)
-            print(f"{address} connected to the server!")
-            print(f"{username} has joined the chat.\n")
+            print(f"{username.decode()} has joined the chat.\n")
+
+            self._broadcast("Welcome to the chat- Type 'QUIT' to leave - You may have to press enter after sending messages to get response".encode(), self.listening_socket)
 
     def getClientMessage(self):
         while True:
             for client in self.connections:
                 message = client.recv(1024)
+                print(message.decode())
                 if message:
-                    print(message)
-                    self._broadcast(sender=client, message=message)
+                    if message != "":
+                        self._broadcast(message, client)
+                elif not client:
+                    break
                 else:
                     break
 
