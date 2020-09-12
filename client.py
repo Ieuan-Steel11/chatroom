@@ -1,5 +1,6 @@
 import socket
 import threading
+import sys
 
 
 class Client:
@@ -39,7 +40,7 @@ class Client:
     def getServerMessages(self):
         while True:
             try:
-                print(f"\n{self.client_socket.recv(1024).decode()[2:-1]}")
+                print(f"\n{self.client_socket.recv(1024).decode()}")
             except socket.error:
                 print("MessageError: could not receive message from server")
             # trying to receive message from server
@@ -54,13 +55,12 @@ class Client:
                     if "QUIT" in message:
                         self.client_socket.sendall(f"{self.name} has disconnected from the server".encode())
                         self.client_socket.close()
-                        break
+                        sys.exit()
                     else:
                         self.client_socket.sendall(f"{self.name}: {message}".encode())
             except socket.error:
                 print("MessageError: Could not send message to server")
                 # trying to send message to server
-        quit(0)
 
 
 client = Client()
