@@ -4,10 +4,6 @@ import select
 from cryptography.fernet import Fernet, InvalidToken
 
 
-# TODO: - fix logging glitches with repeated byte strings
-# TODO: - fix glitch where if you disconnect improperly it says wrong encryption key over and over
-
-
 class Client:
 
     def __init__(self):
