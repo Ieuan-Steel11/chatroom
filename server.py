@@ -5,14 +5,6 @@ import logging
 from cryptography.fernet import Fernet
 
 
-# TODO: - redesign packet structure have header sender and who it's being sent to within the structure
-#         have a custom class for packets allowing you to edit them
-# TODO: - setup a profanity filter and safety net in the far future with machine learning
-# TODO: - setup a front end gui with tkinter
-# TODO: - far future integrate golang for server for its speed
-# TODO: - setup rigid testing on both client and server side
-
-
 class Server:
 
     def __init__(self):
