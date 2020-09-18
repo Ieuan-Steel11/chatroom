@@ -1,6 +1,16 @@
 import socket
 import sys
 import select
+import logging
+from cryptography.fernet import Fernet
+
+
+# TODO: - redesign packet structure have header sender and who it's being sent to within the structure
+#         have a custom class for packets allowing you to edit them
+# TODO: - setup a profanity filter and safety net in the far future with machine learning
+# TODO: - setup a front end gui with tkinter
+# TODO: - far future integrate golang for server for its speed
+# TODO: - setup rigid testing on both client and server side
 
 
 class Server:
@@ -11,13 +21,14 @@ class Server:
         self.listening_socket = None
         # init var to store serverside connection
 
+        logging.basicConfig(filename="server.log", filemode="a", level=logging.INFO)
+        logging.info("\t\t New Session started \n")
+
         self.startServer()
+        self.key = Fernet.generate_key()
 
         self.connections = []
         self.connections.append(self.listening_socket)
-
-        self.writeToLog("\t\t End of session \n\n")
-        # signifies end of old session when new one boots up
 
         self.handle_clients()
 
@@ -36,22 +47,19 @@ class Server:
 
     def getNewClientMessages(self, sock):
         message = sock.recv(1024)
-        self.writeToLog(message.decode())
         # gets messages from teh socket with activity in readable sockets
-
-        if message:
-            self._broadcast(message, sock)
-            # send the message if it isn't blank
+        self._broadcast(message, sock)
+        # send the message if it isn't blank
 
     def getNewClients(self):
+
         connection, address = self.listening_socket.accept()
+        # gets a new client
+        connection.sendall(self.key)
 
         username = connection.recv(1024)
-        # gets username from client
-
-        self.writeToLog(f"{address} connected to the server!")
-        self.writeToLog(f"{username.decode()} has joined the chat.\n")
-
+        logging.info(f"{address} connected to the server!")
+        logging.info(f"{username.decode()} has joined the chat.")
         self.connections.append(connection)
         # gets accepts connections and stores them in a list
 
@@ -60,7 +68,9 @@ class Server:
             if client != sender and client != self.listening_socket:
                 # if it isn't the one who sent the message or the server
                 client.sendall(message)
-                self.writeToLog(f"{message}\n")
+
+        if b"b''" != message:
+            logging.info(f"{message}")
 
     def shutdown(self):
         self._broadcast("Server: The server is being shut down", self.listening_socket)
@@ -71,7 +81,7 @@ class Server:
                     client.close()
                     # closes every connection
 
-        self.writeToLog("\t\tEnd of Session\t\t \n\n")
+        logging.info("\t\t Session ended")
         sys.exit(0)
 
     def startServer(self):
@@ -80,12 +90,6 @@ class Server:
         self.listening_socket.bind((self.host, self.port))
         self.listening_socket.listen(1)
         # set up the socket to get new connections
-
-    @staticmethod
-    def writeToLog(log_message):
-        with open("log.txt", "a") as log:
-            # opens a log file to note down server activity
-            log.write(log_message + "\n")
 
 
 server = Server()
