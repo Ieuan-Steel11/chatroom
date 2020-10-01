@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 #         have a custom class for packets allowing you to edit them
 # TODO: - setup a profanity filter and safety net in the far future with machine learning
 # TODO: - setup a front end gui with tkinter
+# TODO: - far future integrate golang for server for its speed
 # TODO: - setup rigid testing on both client and server side
 
 
