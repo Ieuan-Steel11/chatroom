@@ -1,6 +1,7 @@
 import socket
 import sys
 import select
+import time
 from cryptography.fernet import Fernet, InvalidToken
 
 
@@ -52,7 +53,6 @@ class Client:
 
     def sendMessagesToServer(self):
         message_to_send = sys.stdin.readline()
-        print(message_to_send)
 
         if "QUIT" in message_to_send:
             self.disconnectFromServer()
@@ -60,7 +60,7 @@ class Client:
             print("- Simply type your text in the input then press enter ")
         else:
             message_to_send = bytes(message_to_send, "utf-8")
-            self._broadcastMessage(f"{self.username}: {message_to_send}")
+            self._broadcastMessage(f"{self.username}: {message_to_send} \t\t\t\t {time.time()}")
 
     def _encryptMessage(self, message):
         self.key.replace(b"b'", b"")
